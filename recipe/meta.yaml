@@ -1,5 +1,5 @@
 {% set name = "starlink-ast" %}
-{% set version = "9.3.1" %}
+{% set version = "9.4.1" %}
 
 package:
   name: {{ name|lower }}
@@ -7,11 +7,7 @@ package:
 
 source:
   url: https://github.com/Starlink/ast/releases/download/v{{ version }}/ast-{{ version }}.tar.gz
-  sha256: 651a8d79e8d0134cc815cc0ce87ffd73788c5c2fd7c96a2de83cd183ee55d286
-  patches:
-    - patches/osx-11-configure.patch
-    - patches/cross-compile-makefile.patch
-    - patches/link-libm.patch
+  sha256: 6703d3a532adfe7a859ad42add97a04e29a539a74d14aa9335216445def4472a
 
 build:
   number: 0
@@ -42,6 +38,7 @@ test:
     - test -f ${PREFIX}/lib/libast_grf_2.0${SHLIB_EXT}  # [unix]
     - test -f ${PREFIX}/lib/libast_grf_3.2${SHLIB_EXT}  # [unix]
     - test -f ${PREFIX}/lib/libast_grf_5.6${SHLIB_EXT}  # [unix]
+    - test -f ${PREFIX}/lib/libast_grf_log${SHLIB_EXT}  # [unix]
     - test -f ${PREFIX}/lib/libast_pgplot${SHLIB_EXT}  # [unix]
     - test -f ${PREFIX}/lib/libast_pgplot3d${SHLIB_EXT}  # [unix]
     - test -f ${PREFIX}/lib/libast_pal${SHLIB_EXT}  # [unix]
