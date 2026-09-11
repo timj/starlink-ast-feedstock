@@ -8,6 +8,9 @@ package:
 source:
   url: https://github.com/Starlink/ast/releases/download/v{{ version }}/ast-{{ version }}.tar.gz
   sha256: 6703d3a532adfe7a859ad42add97a04e29a539a74d14aa9335216445def4472a
+  patches:
+    # Temporary: fixed upstream, drop when a release carrying the fix is out.
+    - patches/macos-keep-satellite-libs.patch  # [osx]
 
 build:
   number: 0

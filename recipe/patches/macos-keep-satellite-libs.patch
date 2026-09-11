@@ -1,0 +1,39 @@
+Keep the satellite libraries when the linker dead-strips (macOS only).
+
+The graphics and error-reporting libraries are link-time plugins: libast
+refers to their symbols without linking against them, so a program holds no
+direct reference to them.  On macOS libast is linked -undefined
+dynamic_lookup, which records no undefined symbols at all, so the linker
+cannot see the satellite libraries are needed and the -Wl,-dead_strip_dylibs
+in conda-forge's LDFLAGS drops all five.  The lookups then bind to nothing
+and the first call through one segfaults -- for astPutErr, the first error
+report of the run.  Ten of the C tests died that way, all of them tests that
+deliberately provoke an error.
+
+Force a reference to one symbol from each library so the linker keeps it.
+The libraries are disjoint -- each supplies the part of the grf interface
+added at the version it is named for -- so one symbol each is needed.
+
+Only the C tests are touched, which is all this recipe builds
+(--without-fortran).  The flags cannot go on the Fortran test link lines:
+libtool leaves $wl empty for the Fortran tag and rewrites -Wl,-u,sym to a
+bare "-u sym", which flang rejects.
+
+This is the macOS half of the upstream fix, applied to the generated
+ast_tester/Makefile.in so that no reconfiguration is needed.  Upstream does
+it in configure.ac, keyed on host_os, reaching the tests through
+AST_PLUGIN_KEEP in ast_tester/Makefile.am; nothing outside Darwin needs any
+of it.  Remove this patch when the recipe moves to a release carrying that
+fix.
+
+--- ast_tester/Makefile.in.orig
++++ ast_tester/Makefile.in
+@@ -1412,7 +1412,7 @@
+     $(top_srcdir)/build-aux/tap-driver.sh
+ 
+ TAP_LOG_COMPILER = $(SHELL)
+-CTEST_LDADD = @LIBPAL@ @LIBCMINPACK@ \
++CTEST_LDADD = -Wl,-u,_astPutErr_ -Wl,-u,_astGAttr -Wl,-u,_astGCap -Wl,-u,_astGBBuf -Wl,-u,_astG3DAttr @LIBPAL@ @LIBCMINPACK@ \
+     $(top_builddir)/libast.la \
+     $(top_builddir)/libast_grf_3.2.la \
+     $(top_builddir)/libast_grf_5.6.la \
